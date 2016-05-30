@@ -22,8 +22,8 @@ module Kaleidoscope
     attr_accessor :stream
 
     def get_token(stream)
-      remove_whitespace(stream)
-      chars = next_token(stream)
+      take_whitespace(stream)
+      chars = take_token(stream)
       if chars.empty? && stream.eof?
         [:eof]
       elsif chars == 'def'
@@ -41,9 +41,9 @@ module Kaleidoscope
       end
     end
 
-    def next_token(stream)
+    def take_token(stream)
       if peek(stream) == '#'
-        return next_comment(stream)
+        return take_comment(stream)
       end
 
       chars = ""
@@ -65,11 +65,11 @@ module Kaleidoscope
       chars
     end
 
-    def remove_whitespace(stream)
+    def take_whitespace(stream)
       take_while(stream) { |char| char =~ /\s/ }
     end
 
-    def next_comment(stream)
+    def take_comment(stream)
       take_while(stream) { |char| char != "\n" }
     end
 
