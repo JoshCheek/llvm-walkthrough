@@ -30,6 +30,8 @@ module Kaleidoscope
         [:def, chars]
       elsif chars == 'extern'
         [:extern, chars]
+      elsif chars[0] == '#'
+        [:comment, chars]
       elsif chars =~ /[a-z]/
         [:identifier, chars]
       elsif chars =~ /\d/
@@ -49,6 +51,10 @@ module Kaleidoscope
     end
 
     def next_token(stream)
+      if peek(stream) == '#'
+        return next_comment(stream)
+      end
+
       chars = ""
       until stream.eof?
         char = stream.getc
@@ -68,10 +74,30 @@ module Kaleidoscope
       chars
     end
 
+    def next_comment(stream)
+      comment = ''
+      until stream.eof?
+        char = stream.getc
+        if char == "\n"
+          stream.ungetc(char)
+          break
+        else
+          comment << char
+        end
+      end
+      comment
+    end
+
     OPERATORS = %w[+ - ( )].map(&:freeze)
 
     def operator?(string)
       OPERATORS.include? string
+    end
+
+    def peek(stream)
+      char = stream.getc
+      stream.ungetc char
+      char
     end
   end
 end

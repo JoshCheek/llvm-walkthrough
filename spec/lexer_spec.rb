@@ -86,6 +86,12 @@ RSpec.describe Kaleidoscope::Lex do
       assert_lexes ")", [[:operator, ")"]]
     end
 
+    specify 'comment, when beginning with a #' do
+      assert_lexes "# a",     [[:comment, "# a"]]
+      assert_lexes " # a",    [[:comment, "# a"]]
+      assert_lexes "# a\n\n", [[:comment, "# a"]]
+    end
+
     specify 'eof, when there it hits C-D or when there is no more input' do
       assert_lexes "1", [[:number, 1.0], [:eof]], implicit_eof: false
     end
