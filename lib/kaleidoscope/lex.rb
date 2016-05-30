@@ -19,6 +19,8 @@ module Kaleidoscope
 
     private
 
+    OPERATORS = %w[+ - ( )].map(&:freeze)
+
     attr_accessor :stream
 
     def take_token(stream)
@@ -66,18 +68,6 @@ module Kaleidoscope
       take_while(stream) { |char| char =~ /[0-9.]/ }
     end
 
-    OPERATORS = %w[+ - ( )].map(&:freeze)
-
-    def operator?(string)
-      OPERATORS.include? string
-    end
-
-    def peek(stream)
-      char = stream.getc
-      stream.ungetc char
-      char
-    end
-
     def take_while(stream)
       taken = ""
       until stream.eof?
@@ -90,6 +80,12 @@ module Kaleidoscope
         end
       end
       taken
+    end
+
+    def peek(stream)
+      char = stream.getc
+      stream.ungetc char
+      char
     end
   end
 end
