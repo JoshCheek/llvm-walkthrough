@@ -3,9 +3,10 @@ require 'stringio'
 
 # http://llvm.org/docs/tutorial/LangImpl1.html#language
 RSpec.describe Kaleidoscope::Lex do
-  def assert_lexes(program, expected_tokens)
+  def assert_lexes(program, expected_tokens, implicit_eof: true)
     stream = StringIO.new program
     actual = described_class.call(stream)
+    expected_tokens << [:eof] if implicit_eof
     expect(actual).to eq expected_tokens
   end
 

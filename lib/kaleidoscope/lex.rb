@@ -10,7 +10,11 @@ module Kaleidoscope
 
     def call
       return to_enum(:call) unless block_given?
-      yield get_token(stream) until stream.eof?
+      loop do
+        token = get_token(stream)
+        yield token
+        break if token[0] == :eof
+      end
     end
 
     private
@@ -20,7 +24,9 @@ module Kaleidoscope
     def get_token(stream)
       remove_whitespace(stream)
       chars = next_nonwhitespace(stream)
-      if chars == 'def'
+      if chars.empty? && stream.eof?
+        [:eof]
+      elsif chars == 'def'
         [:def, chars]
       elsif chars == 'extern'
         [:extern, chars]
