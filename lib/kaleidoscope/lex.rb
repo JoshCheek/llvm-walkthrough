@@ -29,7 +29,7 @@ module Kaleidoscope
       elsif chars =~ /\d/
         [:number, chars.to_f]
       else
-        raise "Handle this: #{chars.inspect}"
+        [:operator, chars]
       end
     end
 
