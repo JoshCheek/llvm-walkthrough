@@ -9,7 +9,7 @@ RSpec.describe Kaleidoscope::Lex do
     expect(actual).to eq expected_tokens
   end
 
-  specify 'input is a stream of characters, output is a stream of tokens' do
+  xspecify 'input is a stream of characters, output is a stream of tokens' do
     input = <<-KALEIDOSCOPE
       # Compute the x'th fibonacci number.
       def fib(x)
@@ -53,17 +53,45 @@ RSpec.describe Kaleidoscope::Lex do
       [:operator,    "("],
       [:number,      "40"],
       [:operator,    ")"],
+      [:eof]
     ]
   end
 
   describe 'recognized tokens' do
-    specify 'def, when it sees the "def" alphabetic token'
-    specify 'extern, when it sees the "extern" alphabetic token'
-    specify 'identifier, when it sees an alphabetic that is not a keyword'
-    specify 'number, when it sees [0-9]+(\.[0-9]+)?'
-    specify 'operator, when it\'s not alphanumeric'
-    specify 'eof, when there it hits C-D'
-    it 'ignores whitespace'
+    specify 'def, when it sees the "def" alphabetic token' do
+      assert_lexes "def", [[:def, "def"]]
+    end
+
+    specify 'extern, when it sees the "extern" alphabetic token' do
+      assert_lexes "extern", [[:extern, "extern"]]
+    end
+
+    specify 'identifier, when it sees an alphabetic that is not a keyword' do
+      assert_lexes "abc", [[:identifier, "abc"]]
+    end
+
+    specify 'number, (as a double), when it sees [0-9]+(\.[0-9]+)?' do
+      assert_lexes "0",          [[:number, 0.0]]
+      assert_lexes "1234567890", [[:number, 1234567890.0]]
+      assert_lexes "0.0",        [[:number, 0.0]]
+      assert_lexes "12.0",       [[:number, 12.0]]
+      assert_lexes "12.34",      [[:number, 12.34]]
+    end
+
+    specify 'operator, when it\'s not alphanumeric' do
+      assert_lexes "+", [[:operator, "+"]]
+      assert_lexes "-", [[:operator, "-"]]
+      assert_lexes "(", [[:operator, "("]]
+      assert_lexes ")", [[:operator, ")"]]
+    end
+
+    specify 'eof, when there it hits C-D or when there is no more input' do
+      assert_lexes "1", [[:number, 1.0], [:eof]], implicit_eof: false
+    end
+
+    it 'ignores whitespace' do
+      assert_lexes "1 +2", [[:number, 1.0], [:operator, "+"], [:number, 2.0]]
+    end
   end
 end
 
