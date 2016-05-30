@@ -33,11 +33,11 @@ module Kaleidoscope
       when nil         then [:eof]
       when '#'         then [:comment,  take_comment(stream)]
       when /[0-9]/     then [:number,   take_number(stream).to_f]
-      when *OPERATORS  then [:operator, take_operator(stream)]
+      when *OPERATORS  then [:operator, take_operator(stream).intern]
       else
         case chars = take_alpha(stream)
-        when *KEYWORDS then [chars.intern, chars]
-        else                [:identifier,  chars]
+        when *KEYWORDS then [:keyword,    chars.intern]
+        else                [:identifier, chars.intern]
         end
       end
     end

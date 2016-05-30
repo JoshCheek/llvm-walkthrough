@@ -59,16 +59,18 @@ RSpec.describe Kaleidoscope::Lex do
   end
 
   describe 'recognized tokens' do
-    specify 'def, when it sees the "def" alphabetic token' do
-      assert_lexes "def", [[:def, "def"]]
-    end
+    describe 'keywords' do
+      specify 'def, when it sees the "def" alphabetic token' do
+        assert_lexes "def", [[:keyword, :def]]
+      end
 
-    specify 'extern, when it sees the "extern" alphabetic token' do
-      assert_lexes "extern", [[:extern, "extern"]]
+      specify 'extern, when it sees the "extern" alphabetic token' do
+        assert_lexes "extern", [[:keyword, :extern]]
+      end
     end
 
     specify 'identifier, when it sees an alphabetic that is not a keyword' do
-      assert_lexes "abc", [[:identifier, "abc"]]
+      assert_lexes "abc", [[:identifier, :abc]]
     end
 
     specify 'number, (as a double), when it sees [0-9]+(\.[0-9]+)?' do
@@ -80,10 +82,10 @@ RSpec.describe Kaleidoscope::Lex do
     end
 
     specify 'operator, when it\'s not alphanumeric' do
-      assert_lexes "+", [[:operator, "+"]]
-      assert_lexes "-", [[:operator, "-"]]
-      assert_lexes "(", [[:operator, "("]]
-      assert_lexes ")", [[:operator, ")"]]
+      assert_lexes "+", [[:operator, :+]]
+      assert_lexes "-", [[:operator, :-]]
+      assert_lexes "(", [[:operator, :"("]]
+      assert_lexes ")", [[:operator, :")"]]
     end
 
     specify 'comment, when beginning with a #' do
@@ -97,8 +99,8 @@ RSpec.describe Kaleidoscope::Lex do
     end
 
     it 'ignores whitespace' do
-      assert_lexes "1 + 2", [[:number, 1.0], [:operator, "+"], [:number, 2.0]]
-      assert_lexes "1+2",   [[:number, 1.0], [:operator, "+"], [:number, 2.0]]
+      assert_lexes "1 + 2", [[:number, 1.0], [:operator, :+], [:number, 2.0]]
+      assert_lexes "1+2",   [[:number, 1.0], [:operator, :+], [:number, 2.0]]
     end
   end
 end
