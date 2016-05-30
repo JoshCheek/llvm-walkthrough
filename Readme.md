@@ -1,6 +1,9 @@
 Implementing a language for LLVM
 =================================
 
+Unfinished b/c with 3 hours of effort, I could not get LLVM installed :(
+
+
 Going through [this](http://llvm.org/docs/tutorial/LangImpl1.html)
 tutorial to learn about LLVM by building a language, "Kaleidoscope"
 on top of it.
