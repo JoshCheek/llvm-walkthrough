@@ -19,30 +19,25 @@ module Kaleidoscope
 
     private
 
-    OPERATORS = %w[+ - ( )].map(&:freeze)
+    def self.symbol_list!(list)
+      list.freeze.each &:freeze
+    end
+    OPERATORS = symbol_list! %w[+ - ( )]
+    KEYWORDS  = symbol_list! %w[def extern]
 
     attr_accessor :stream
 
     def take_token(stream)
       take_whitespace(stream)
       case peek(stream)
-      when '#'
-        [:comment, take_comment(stream)]
-      when /[0-9]/
-        [:number, take_number(stream).to_f]
-      when *OPERATORS
-        [:operator, take_operator(stream)]
+      when nil         then [:eof]
+      when '#'         then [:comment,  take_comment(stream)]
+      when /[0-9]/     then [:number,   take_number(stream).to_f]
+      when *OPERATORS  then [:operator, take_operator(stream)]
       else
         case chars = take_alpha(stream)
-        when ''
-          raise unless stream.eof? # sanity check, no tests hit this
-          [:eof]
-        when 'def'
-          [:def, chars]
-        when 'extern'
-          [:extern, chars]
-        else
-          [:identifier, chars]
+        when *KEYWORDS then [chars.intern, chars]
+        else                [:identifier,  chars]
         end
       end
     end
