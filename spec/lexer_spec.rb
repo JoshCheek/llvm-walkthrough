@@ -91,7 +91,8 @@ RSpec.describe Kaleidoscope::Lex do
     end
 
     it 'ignores whitespace' do
-      assert_lexes "1 +2", [[:number, 1.0], [:operator, "+"], [:number, 2.0]]
+      assert_lexes "1 + 2", [[:number, 1.0], [:operator, "+"], [:number, 2.0]]
+      assert_lexes "1+2",   [[:number, 1.0], [:operator, "+"], [:number, 2.0]]
     end
   end
 end

@@ -23,7 +23,7 @@ module Kaleidoscope
 
     def get_token(stream)
       remove_whitespace(stream)
-      chars = next_nonwhitespace(stream)
+      chars = next_token(stream)
       if chars.empty? && stream.eof?
         [:eof]
       elsif chars == 'def'
@@ -48,11 +48,17 @@ module Kaleidoscope
       end
     end
 
-    def next_nonwhitespace(stream)
+    def next_token(stream)
       chars = ""
       until stream.eof?
         char = stream.getc
         if char =~ /\s/
+          stream.ungetc char
+          break
+        elsif operator?(char) && chars.empty?
+          chars << char
+          break
+        elsif operator?(char)
           stream.ungetc char
           break
         else
@@ -62,5 +68,10 @@ module Kaleidoscope
       chars
     end
 
+    OPERATORS = %w[+ - ( )].map(&:freeze)
+
+    def operator?(string)
+      OPERATORS.include? string
+    end
   end
 end
