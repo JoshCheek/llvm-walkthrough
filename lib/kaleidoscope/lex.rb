@@ -22,7 +22,6 @@ module Kaleidoscope
     attr_accessor :stream
 
     def get_token(stream)
-      take_whitespace(stream)
       chars = take_token(stream)
       if chars.empty? && stream.eof?
         [:eof]
@@ -42,27 +41,31 @@ module Kaleidoscope
     end
 
     def take_token(stream)
-      if peek(stream) == '#'
-        return take_comment(stream)
-      end
-
-      chars = ""
-      until stream.eof?
-        char = stream.getc
-        if char =~ /\s/
-          stream.ungetc char
-          break
-        elsif operator?(char) && chars.empty?
-          chars << char
-          break
-        elsif operator?(char)
-          stream.ungetc char
-          break
-        else
-          chars << char
+      take_whitespace(stream)
+      case peek(stream)
+      when '#'
+        take_comment(stream)
+      when /[0-9]/
+        take_number(stream)
+      else
+        chars = ""
+        until stream.eof?
+          char = stream.getc
+          if char =~ /\s/
+            stream.ungetc char
+            break
+          elsif operator?(char) && chars.empty?
+            chars << char
+            break
+          elsif operator?(char)
+            stream.ungetc char
+            break
+          else
+            chars << char
+          end
         end
+        chars
       end
-      chars
     end
 
     def take_whitespace(stream)
@@ -71,6 +74,10 @@ module Kaleidoscope
 
     def take_comment(stream)
       take_while(stream) { |char| char != "\n" }
+    end
+
+    def take_number(stream)
+      take_while(stream) { |char| char =~ /[0-9.]/ }
     end
 
     OPERATORS = %w[+ - ( )].map(&:freeze)
