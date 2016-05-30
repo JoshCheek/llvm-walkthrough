@@ -11,7 +11,7 @@ module Kaleidoscope
     def call
       return to_enum(:call) unless block_given?
       loop do
-        token = get_token(stream)
+        token = take_token(stream)
         yield token
         break if token[0] == :eof
       end
@@ -21,51 +21,32 @@ module Kaleidoscope
 
     attr_accessor :stream
 
-    def get_token(stream)
-      chars = take_token(stream)
-      if chars.empty? && stream.eof?
-        [:eof]
-      elsif chars == 'def'
-        [:def, chars]
-      elsif chars == 'extern'
-        [:extern, chars]
-      elsif chars[0] == '#'
-        [:comment, chars]
-      elsif chars =~ /[a-z]/
-        [:identifier, chars]
-      elsif chars =~ /\d/
-        [:number, chars.to_f]
-      else
-        [:operator, chars]
-      end
-    end
-
     def take_token(stream)
       take_whitespace(stream)
       case peek(stream)
       when '#'
-        take_comment(stream)
+        [:comment, take_comment(stream)]
       when /[0-9]/
-        take_number(stream)
+        [:number, take_number(stream).to_f]
+      when *OPERATORS
+        [:operator, take_operator(stream)]
       else
-        chars = ""
-        until stream.eof?
-          char = stream.getc
-          if char =~ /\s/
-            stream.ungetc char
-            break
-          elsif operator?(char) && chars.empty?
-            chars << char
-            break
-          elsif operator?(char)
-            stream.ungetc char
-            break
-          else
-            chars << char
-          end
+        case chars = take_alpha(stream)
+        when ''
+          raise unless stream.eof? # sanity check, no tests hit this
+          [:eof]
+        when 'def'
+          [:def, chars]
+        when 'extern'
+          [:extern, chars]
+        else
+          [:identifier, chars]
         end
-        chars
       end
+    end
+
+    def take_alpha(stream)
+      take_while(stream) { |char| char =~ /\w/ }
     end
 
     def take_whitespace(stream)
@@ -74,6 +55,11 @@ module Kaleidoscope
 
     def take_comment(stream)
       take_while(stream) { |char| char != "\n" }
+    end
+
+    def take_operator(stream)
+      count = 0
+      take_while(stream) { |char| (count+=1) == 1 }
     end
 
     def take_number(stream)
