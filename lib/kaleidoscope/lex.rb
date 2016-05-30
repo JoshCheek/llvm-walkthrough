@@ -41,15 +41,6 @@ module Kaleidoscope
       end
     end
 
-    def remove_whitespace(stream)
-      until stream.eof?
-        char = stream.getc
-        next if char =~ /\s/
-        stream.ungetc char
-        break
-      end
-    end
-
     def next_token(stream)
       if peek(stream) == '#'
         return next_comment(stream)
@@ -74,18 +65,12 @@ module Kaleidoscope
       chars
     end
 
+    def remove_whitespace(stream)
+      take_while(stream) { |char| char =~ /\s/ }
+    end
+
     def next_comment(stream)
-      comment = ''
-      until stream.eof?
-        char = stream.getc
-        if char == "\n"
-          stream.ungetc(char)
-          break
-        else
-          comment << char
-        end
-      end
-      comment
+      take_while(stream) { |char| char != "\n" }
     end
 
     OPERATORS = %w[+ - ( )].map(&:freeze)
@@ -98,6 +83,20 @@ module Kaleidoscope
       char = stream.getc
       stream.ungetc char
       char
+    end
+
+    def take_while(stream)
+      taken = ""
+      until stream.eof?
+        char = stream.getc
+        if yield char
+          taken << char
+        else
+          stream.ungetc char
+          break
+        end
+      end
+      taken
     end
   end
 end
