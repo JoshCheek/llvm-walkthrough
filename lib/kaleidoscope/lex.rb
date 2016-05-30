@@ -24,6 +24,8 @@ module Kaleidoscope
         [:def, chars]
       elsif chars == 'extern'
         [:extern, chars]
+      elsif chars =~ /[a-z]/
+        [:identifier, chars]
       else
         raise "Handle this: #{chars.inspect}"
       end
