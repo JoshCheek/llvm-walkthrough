@@ -10,7 +10,7 @@ RSpec.describe Kaleidoscope::Lex do
     expect(actual).to eq expected_tokens
   end
 
-  xspecify 'input is a stream of characters, output is a stream of tokens' do
+  specify 'input is a stream of characters, output is a stream of tokens' do
     input = <<-KALEIDOSCOPE
       # Compute the x'th fibonacci number.
       def fib(x)
@@ -22,20 +22,21 @@ RSpec.describe Kaleidoscope::Lex do
       # This expression will compute the 40th number.
       fib(40)
     KALEIDOSCOPE
-    assert_lexes input, [
+
+    expected = [
       [:comment,     "# Compute the x'th fibonacci number."],
-      [:def,         :def],
+      [:keyword,     :def],
       [:identifier,  :fib],
       [:operator,    :"("],
       [:identifier,  :x],
       [:operator,    :")"],
-      [:conditional, :if],
+      [:keyword,     :if],
       [:identifier,  :x],
       [:operator,    :<],
       [:number,      3.0],
-      [:ifbranch,    :then],
+      [:keyword,     :then],
       [:number,      1.0],
-      [:ifbranch,    :else],
+      [:keyword,     :else],
       [:identifier,  :fib],
       [:operator,    :"("],
       [:identifier,  :x],
@@ -56,17 +57,17 @@ RSpec.describe Kaleidoscope::Lex do
       [:operator,    :")"],
       [:eof]
     ]
+
+    assert_lexes input, expected, implicit_eof: false
   end
 
   describe 'recognized tokens' do
-    describe 'keywords' do
-      specify 'def, when it sees the "def" alphabetic token' do
-        assert_lexes "def", [[:keyword, :def]]
-      end
-
-      specify 'extern, when it sees the "extern" alphabetic token' do
-        assert_lexes "extern", [[:keyword, :extern]]
-      end
+    describe 'keywords are a subset of alphabetic tokens' do
+      example('def')    { assert_lexes "def",    [[:keyword, :def]] }
+      specify('extern') { assert_lexes "extern", [[:keyword, :extern]] }
+      specify('if')     { assert_lexes "if",     [[:keyword, :if]] }
+      specify('then')   { assert_lexes "then",   [[:keyword, :then]] }
+      specify('else')   { assert_lexes "else",   [[:keyword, :else]] }
     end
 
     specify 'identifier, when it sees an alphabetic that is not a keyword' do
@@ -84,6 +85,8 @@ RSpec.describe Kaleidoscope::Lex do
     specify 'operator, when it\'s not alphanumeric' do
       assert_lexes "+", [[:operator, :+]]
       assert_lexes "-", [[:operator, :-]]
+      assert_lexes "<", [[:operator, :<]]
+      assert_lexes ">", [[:operator, :>]]
       assert_lexes "(", [[:operator, :"("]]
       assert_lexes ")", [[:operator, :")"]]
     end

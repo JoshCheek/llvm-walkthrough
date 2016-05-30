@@ -22,8 +22,8 @@ module Kaleidoscope
     def self.symbol_list!(list)
       list.freeze.each &:freeze
     end
-    OPERATORS = symbol_list! %w[+ - ( )]
-    KEYWORDS  = symbol_list! %w[def extern]
+    OPERATORS = symbol_list! %w[+ - ( ) < >]
+    KEYWORDS  = symbol_list! %w[def extern if then else]
 
     attr_accessor :stream
 
@@ -35,7 +35,9 @@ module Kaleidoscope
       when /[0-9]/     then [:number,   take_number(stream).to_f]
       when *OPERATORS  then [:operator, take_operator(stream).intern]
       else
-        case chars = take_alpha(stream)
+        chars = take_alpha(stream)
+        not_empty! chars, stream
+        case chars
         when *KEYWORDS then [:keyword,    chars.intern]
         else                [:identifier, chars.intern]
         end
@@ -81,6 +83,11 @@ module Kaleidoscope
       char = stream.getc
       stream.ungetc char
       char
+    end
+
+    def not_empty!(chars, stream)
+      return unless chars.empty?
+      raise "Empty! next up: #{stream.gets.inspect}"
     end
   end
 end
